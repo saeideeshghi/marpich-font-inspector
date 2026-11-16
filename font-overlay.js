@@ -32,7 +32,7 @@
         .notice{margin:0 12px 8px;padding:8px 10px;border-radius:8px;background:rgb(234,244,255);color:rgb(56,87,121);font-size:11px}
         .viewport-controls{display:grid;grid-template-columns:minmax(150px,1fr) auto auto auto;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid rgb(226,232,240);background:white}.viewport-controls strong{font-size:11px;color:rgb(57,76,102)}.viewport-controls label{display:flex;align-items:center;gap:4px;color:rgb(93,109,131);font-size:10px;white-space:nowrap}.viewport-controls input,.viewport-controls select{height:32px;padding:4px 7px;border:1px solid rgb(208,219,234);border-radius:7px;background:white;color:rgb(20,35,60);font:12px Arial,Tahoma,sans-serif}.viewport-controls input{width:74px;direction:ltr}.viewport-controls select{min-width:120px}.viewport-controls .preview-toggle{min-width:106px}
         .launcher{position:fixed;z-index:4;right:14px;bottom:14px;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:rgb(16,26,48);color:white;box-shadow:0 8px 26px rgba(7,21,43,.3);font:700 13px Arial,Tahoma,sans-serif;cursor:pointer;pointer-events:auto}.launcher:hover{background:rgb(36,94,153)}
-        [hidden]{display:none!important}.panel{width:min(540px,calc(100vw - 28px))}.panel>.actions,.panel>.status,.panel>.notice,.panel>.results,.panel>.bottom,.panel .url{display:none!important}.panel .viewport-controls{display:flex;flex-wrap:wrap}.viewport-shell{position:fixed;z-index:1;inset:0;display:flex;flex-direction:column;align-items:stretch;gap:0;overflow:auto;padding:0;background:rgb(20,28,43);pointer-events:auto;overscroll-behavior:contain}.preview-toolbar{position:sticky;top:0;z-index:2;display:flex;flex:none;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:100%;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(16,26,48,.96);color:white;font:11px Arial,Tahoma,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.2)}.preview-toolbar span{padding:0 4px;direction:ltr;white-space:nowrap}.preview-toolbar button{min-height:28px;padding:4px 8px;font-size:11px}.preview-frame{display:block;flex:none;margin:0 auto;border:0;background:white;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+        [hidden]{display:none!important}.panel{width:min(540px,calc(100vw - 28px))}.panel>.actions,.panel>.status,.panel>.notice,.panel>.results,.panel>.bottom,.panel .url{display:none!important}.panel .viewport-controls{display:flex;flex-wrap:wrap}.viewport-shell{position:fixed;z-index:0;inset:0;display:flex;flex-direction:column;align-items:stretch;gap:0;overflow:auto;padding:0;background:rgb(20,28,43);pointer-events:auto;overscroll-behavior:contain}.preview-toolbar{position:sticky;top:0;z-index:2;display:flex;flex:none;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:100%;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(16,26,48,.96);color:white;font:11px Arial,Tahoma,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.2)}.preview-toolbar span{padding:0 4px;direction:ltr;white-space:nowrap}.preview-toolbar button{min-height:28px;padding:4px 8px;font-size:11px}.preview-frame{display:block;flex:none;margin:0 auto;border:0;background:white;box-shadow:0 8px 28px rgba(0,0,0,.28)}
         .results{min-height:100px;overflow:auto;padding:0 12px 12px;overscroll-behavior:contain}
         .item{display:grid;grid-template-columns:145px minmax(130px,1.1fr) minmax(250px,1.6fr);gap:10px;align-items:start;padding:10px;border-top:1px solid rgb(230,235,242)}
         .role{font-weight:700;color:rgb(23,41,67)}.sample{min-width:0;color:rgb(52,68,92);overflow-wrap:anywhere}.sample small{display:block;margin-top:4px;color:rgb(122,135,153);font-size:10px;direction:ltr;text-align:left;overflow-wrap:anywhere}
@@ -163,7 +163,7 @@
             viewportShell.hidden = false;
             panel.style.display = "none";
             launcher.hidden = true;
-            markerLayer.style.display = "none";
+            markerLayer.style.display = state.marks ? "block" : "none";
             const previewUrl = new URL(location.href);
             previewUrl.searchParams.set("__marpichFontPreview", "1");
             frame.onload = setPreviewContext;
@@ -196,14 +196,14 @@
         state.hidden = true;
         panel.style.display = "none";
         launcher.hidden = state.preview;
-        markerLayer.style.display = state.marks && !state.preview ? "block" : "none";
+        markerLayer.style.display = state.marks ? "block" : "none";
     }
 
     function showPanel() {
         state.hidden = false;
         panel.style.display = "flex";
         launcher.hidden = true;
-        markerLayer.style.display = state.marks && !state.preview ? "block" : "none";
+        markerLayer.style.display = state.marks ? "block" : "none";
     }
 
     function toggle() { state.hidden ? showPanel() : hidePanel(); }
@@ -347,7 +347,7 @@
 
     function updateMarkers() {
         markerLayer.replaceChildren();
-        if (!state.marks || state.preview) return;
+        if (!state.marks) return;
         for (const item of state.current) {
             const rect = item.element.getBoundingClientRect();
             const frameRect = state.preview ? frame.getBoundingClientRect() : { left: 0, top: 0 };
@@ -460,6 +460,6 @@
     window.addEventListener("keydown", onKey, keyOptions);
     state.listeners.push([window, "scroll", onScroll, scrollOptions], [window, "resize", onResize, resizeOptions], [window, "keydown", onKey, keyOptions]);
     window[key] = { toggle, close: hidePanel, cleanup };
-    state.marks = false; hidePanel();
+    hidePanel(); scan();
 })();
 
