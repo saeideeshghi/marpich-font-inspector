@@ -32,14 +32,14 @@
         .notice{margin:0 12px 8px;padding:8px 10px;border-radius:8px;background:rgb(234,244,255);color:rgb(56,87,121);font-size:11px}
         .viewport-controls{display:grid;grid-template-columns:minmax(150px,1fr) auto auto auto;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid rgb(226,232,240);background:white}.viewport-controls strong{font-size:11px;color:rgb(57,76,102)}.viewport-controls label{display:flex;align-items:center;gap:4px;color:rgb(93,109,131);font-size:10px;white-space:nowrap}.viewport-controls input,.viewport-controls select{height:32px;padding:4px 7px;border:1px solid rgb(208,219,234);border-radius:7px;background:white;color:rgb(20,35,60);font:12px Arial,Tahoma,sans-serif}.viewport-controls input{width:74px;direction:ltr}.viewport-controls select{min-width:120px}.viewport-controls .preview-toggle{min-width:106px}
         .launcher{position:fixed;z-index:4;right:14px;bottom:14px;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:rgb(16,26,48);color:white;box-shadow:0 8px 26px rgba(7,21,43,.3);font:700 13px Arial,Tahoma,sans-serif;cursor:pointer;pointer-events:auto}.launcher:hover{background:rgb(36,94,153)}
-        .viewport-shell{position:fixed;z-index:0;inset:0;overflow:auto;padding:58px 24px 28px;background:rgba(12,22,40,.76);pointer-events:auto}.preview-toolbar{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.28);border-radius:9px;background:rgb(16,26,48);color:white;font:12px Arial,Tahoma,sans-serif}.preview-frame{display:block;margin:14px auto 20px;border:0;outline:1px solid rgba(255,255,255,.7);background:white;box-shadow:0 12px 38px rgba(0,0,0,.34)}
+        [hidden]{display:none!important}.viewport-shell{position:fixed;z-index:1;inset:0;display:flex;flex-direction:column;align-items:center;gap:10px;overflow:auto;padding:10px;background:rgb(20,28,43);pointer-events:auto;overscroll-behavior:contain}.preview-toolbar{position:sticky;top:0;z-index:2;display:flex;flex:none;align-items:center;justify-content:center;gap:8px;width:max-content;max-width:100%;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(16,26,48,.96);color:white;font:11px Arial,Tahoma,sans-serif;box-shadow:0 3px 12px rgba(0,0,0,.2)}.preview-toolbar span{padding:0 4px;direction:ltr;white-space:nowrap}.preview-toolbar button{min-height:28px;padding:4px 8px;font-size:11px}.preview-frame{display:block;flex:none;margin:0 auto 10px;border:0;background:white;box-shadow:0 8px 28px rgba(0,0,0,.28)}
         .results{min-height:100px;overflow:auto;padding:0 12px 12px;overscroll-behavior:contain}
         .item{display:grid;grid-template-columns:145px minmax(130px,1.1fr) minmax(250px,1.6fr);gap:10px;align-items:start;padding:10px;border-top:1px solid rgb(230,235,242)}
         .role{font-weight:700;color:rgb(23,41,67)}.sample{min-width:0;color:rgb(52,68,92);overflow-wrap:anywhere}.sample small{display:block;margin-top:4px;color:rgb(122,135,153);font-size:10px;direction:ltr;text-align:left;overflow-wrap:anywhere}
         .values{display:flex;flex-wrap:wrap;gap:5px}.chip{padding:3px 7px;border:1px solid rgb(220,229,239);border-radius:999px;background:rgb(246,249,252);color:rgb(64,83,108);font-size:10px;direction:ltr;unicode-bidi:plaintext}.chip.size{border-color:rgb(185,215,245);background:rgb(234,244,255);color:rgb(24,85,142);font-weight:700}
         .empty{padding:28px 12px;text-align:center;color:rgb(109,123,144)}.bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 13px;border-top:1px solid rgb(227,233,241);color:rgb(107,120,138);background:rgb(251,252,254);font-size:10px}
         .mark{position:fixed;z-index:1;box-sizing:border-box;border:1px solid rgb(242,109,50);background:rgba(242,109,50,.025);pointer-events:none}.mark.title{border-color:rgb(241,145,39);background:rgba(241,145,39,.025)}.mark.cta{border-color:rgb(48,162,123);background:rgba(48,162,123,.025)}.mark-label{position:absolute;top:-1px;right:-1px;transform:translateY(-100%);max-width:min(260px,calc(100vw - 16px));padding:2px 5px;border-radius:4px 4px 0 0;background:rgb(21,36,58);color:white;font:10px/1.35 Arial,Tahoma,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl}
-        @media(max-width:700px){.panel{right:7px;bottom:7px;width:calc(100vw - 14px);max-height:88vh;border-radius:12px}.top{gap:7px;padding:10px}.brand strong{font-size:13px}.actions{gap:5px;padding:8px}.item{grid-template-columns:1fr;gap:5px;padding:9px}.values{gap:4px}.bottom{align-items:flex-start;flex-direction:column}.search{flex-basis:100%}.viewport-controls{grid-template-columns:1fr 1fr;gap:6px;padding:8px}.viewport-controls strong{grid-column:1/-1}.viewport-controls select{grid-column:1/-1;width:100%}.viewport-controls .preview-toggle{grid-column:1/-1;width:100%}.viewport-controls label{justify-content:space-between}.viewport-controls input{width:70px}.viewport-shell{padding:56px 10px 20px}.preview-toolbar{font-size:11px}.launcher{right:8px;bottom:8px;width:44px;height:44px}}
+        @media(max-width:700px){.panel{right:7px;bottom:7px;width:calc(100vw - 14px);max-height:88vh;border-radius:12px}.top{gap:7px;padding:10px}.brand strong{font-size:13px}.actions{gap:5px;padding:8px}.item{grid-template-columns:1fr;gap:5px;padding:9px}.values{gap:4px}.bottom{align-items:flex-start;flex-direction:column}.search{flex-basis:100%}.viewport-controls{grid-template-columns:1fr 1fr;gap:6px;padding:8px}.viewport-controls strong{grid-column:1/-1}.viewport-controls select{grid-column:1/-1;width:100%}.viewport-controls .preview-toggle{grid-column:1/-1;width:100%}.viewport-controls label{justify-content:space-between}.viewport-controls input{width:70px}.viewport-shell{padding:8px}.preview-toolbar{gap:4px;padding:4px}.preview-toolbar button{padding:3px 6px;font-size:10px}.launcher{right:8px;bottom:8px;width:44px;height:44px}}
     `;
     shadow.appendChild(style);
 
@@ -90,7 +90,7 @@
     const viewportShell = document.createElement("div");
     viewportShell.className = "viewport-shell";
     viewportShell.hidden = true;
-    viewportShell.innerHTML = `<div class="preview-toolbar"><span>پیش‌نمایش واکنش‌گرا · صفحه اصلی در پس‌زمینه موقتاً پوشانده شده</span><button class="preview-exit" type="button">خروج از پیش‌نمایش</button></div><iframe class="preview-frame" title="پیش‌نمایش اندازه صفحه"></iframe>`;
+    viewportShell.innerHTML = `<div class="preview-toolbar"><span class="preview-size"></span><button class="preview-settings" type="button">تنظیم اندازه</button><button class="preview-exit" type="button" aria-label="خروج از پیش‌نمایش">خروج</button></div><iframe class="preview-frame" title="پیش‌نمایش واکنش‌گرای سایت"></iframe>`;
     shadow.appendChild(viewportShell);
     document.documentElement.appendChild(host);
 
@@ -157,9 +157,13 @@
         heightInput.setCustomValidity("");
         frame.style.width = `${width}px`;
         frame.style.height = `${height}px`;
+        viewportShell.querySelector(".preview-size").textContent = `${width} × ${height} CSS px`;
         if (!state.preview) {
             state.preview = true;
             viewportShell.hidden = false;
+            panel.style.display = "none";
+            launcher.hidden = true;
+            markerLayer.style.display = "none";
             const previewUrl = new URL(location.href);
             previewUrl.searchParams.set("__marpichFontPreview", "1");
             frame.onload = setPreviewContext;
@@ -169,6 +173,7 @@
         }
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(scan, 160);
+        hidePanel();
     }
 
     function stopPreview() {
@@ -180,6 +185,9 @@
         frame.onload = null;
         frame.src = "about:blank";
         viewportShell.hidden = true;
+        panel.style.display = "none";
+        state.hidden = true;
+        launcher.hidden = false;
         q(".preview-toggle").textContent = "پیش‌نمایش این اندازه";
         scan();
     }
@@ -187,15 +195,15 @@
     function hidePanel() {
         state.hidden = true;
         panel.style.display = "none";
-        launcher.hidden = false;
-        markerLayer.style.display = state.marks ? "block" : "none";
+        launcher.hidden = state.preview;
+        markerLayer.style.display = state.marks && !state.preview ? "block" : "none";
     }
 
     function showPanel() {
         state.hidden = false;
         panel.style.display = "flex";
         launcher.hidden = true;
-        markerLayer.style.display = state.marks ? "block" : "none";
+        markerLayer.style.display = state.marks && !state.preview ? "block" : "none";
     }
 
     function toggle() { state.hidden ? showPanel() : hidePanel(); }
@@ -339,7 +347,7 @@
 
     function updateMarkers() {
         markerLayer.replaceChildren();
-        if (!state.marks) return;
+        if (!state.marks || state.preview) return;
         for (const item of state.current) {
             const rect = item.element.getBoundingClientRect();
             const frameRect = state.preview ? frame.getBoundingClientRect() : { left: 0, top: 0 };
@@ -431,10 +439,11 @@
         const [width, height] = event.target.value.split("x");
         widthInput.value = width;
         heightInput.value = height;
-        if (state.preview) applyPreviewSize();
+        applyPreviewSize();
     });
     q(".preview-toggle").addEventListener("click", () => state.preview ? applyPreviewSize() : applyPreviewSize());
     q(".preview-exit").addEventListener("click", stopPreview);
+    q(".preview-settings").addEventListener("click", showPanel);
     widthInput.addEventListener("input", () => { q(".viewport-preset").value = "custom"; });
     heightInput.addEventListener("input", () => { q(".viewport-preset").value = "custom"; });
     q(".show-marks").addEventListener("change", (event) => { state.marks = event.target.checked; updateMarkers(); });
