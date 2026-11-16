@@ -31,7 +31,7 @@
         .role{font-weight:700;color:rgb(23,41,67)}.sample{min-width:0;color:rgb(52,68,92);overflow-wrap:anywhere}.sample small{display:block;margin-top:4px;color:rgb(122,135,153);font-size:10px;direction:ltr;text-align:left;overflow-wrap:anywhere}
         .values{display:flex;flex-wrap:wrap;gap:5px}.chip{padding:3px 7px;border:1px solid rgb(220,229,239);border-radius:999px;background:rgb(246,249,252);color:rgb(64,83,108);font-size:10px;direction:ltr;unicode-bidi:plaintext}.chip.size{border-color:rgb(185,215,245);background:rgb(234,244,255);color:rgb(24,85,142);font-weight:700}
         .empty{padding:28px 12px;text-align:center;color:rgb(109,123,144)}.bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 13px;border-top:1px solid rgb(227,233,241);color:rgb(107,120,138);background:rgb(251,252,254);font-size:10px}
-        .mark{position:fixed;z-index:1;border:1px solid rgb(242,109,50);background:rgba(242,109,50,.06);pointer-events:none}.mark.title{border-color:rgb(241,145,39);background:rgba(241,145,39,.06)}.mark.cta{border-color:rgb(48,162,123);background:rgba(48,162,123,.06)}.mark-label{position:absolute;top:0;right:0;transform:translateY(-100%);max-width:260px;padding:2px 5px;border-radius:4px 4px 0 0;background:rgb(21,36,58);color:white;font:10px/1.35 Arial,Tahoma,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl}
+        .mark{position:fixed;z-index:1;box-sizing:border-box;border:1px solid rgb(242,109,50);background:rgba(242,109,50,.025);pointer-events:none}.mark.title{border-color:rgb(241,145,39);background:rgba(241,145,39,.025)}.mark.cta{border-color:rgb(48,162,123);background:rgba(48,162,123,.025)}.mark-label{position:absolute;top:-1px;right:-1px;transform:translateY(-100%);max-width:min(260px,calc(100vw - 16px));padding:2px 5px;border-radius:4px 4px 0 0;background:rgb(21,36,58);color:white;font:10px/1.35 Arial,Tahoma,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl}
         @media(max-width:700px){.panel{right:7px;bottom:7px;width:calc(100vw - 14px);max-height:88vh;border-radius:12px}.top{gap:7px;padding:10px}.brand strong{font-size:13px}.actions{gap:5px;padding:8px}.item{grid-template-columns:1fr;gap:5px;padding:9px}.values{gap:4px}.bottom{align-items:flex-start;flex-direction:column}.search{flex-basis:100%}}
     `;
     shadow.appendChild(style);
@@ -210,10 +210,12 @@
             if (rect.width <= 0 || rect.height <= 0 || rect.bottom < 0 || rect.top > innerHeight || rect.right < 0 || rect.left > innerWidth) continue;
             const mark = document.createElement("div");
             mark.className = `mark${item.role.includes("عنوان") ? " title" : item.role.includes("CTA") ? " cta" : ""}`;
-            mark.style.left = `${Math.round(rect.left)}px`;
-            mark.style.top = `${Math.round(rect.top)}px`;
-            mark.style.width = `${Math.round(rect.width)}px`;
-            mark.style.height = `${Math.round(rect.height)}px`;
+            // Keep fractional CSS pixels: rounding shifts thin borders away from
+            // the element's real edge on high-DPI and zoomed viewports.
+            mark.style.left = `${rect.left.toFixed(2)}px`;
+            mark.style.top = `${rect.top.toFixed(2)}px`;
+            mark.style.width = `${rect.width.toFixed(2)}px`;
+            mark.style.height = `${rect.height.toFixed(2)}px`;
             const label = document.createElement("span");
             label.className = "mark-label";
             label.textContent = `${item.role} · ${item.fontSize}`;
