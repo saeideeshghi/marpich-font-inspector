@@ -1,4 +1,5 @@
 (() => {
+    if (new URLSearchParams(location.search).has("__marpichFontPreview")) return;
     const key = "__marpichFontAudit";
     if (window[key]) {
         window[key].toggle();
@@ -8,7 +9,10 @@
     const host = document.createElement("div");
     host.setAttribute("data-marpich-font-audit", "root");
     const shadow = host.attachShadow({ mode: "open" });
-    const state = { current: [], captures: [], marks: true, hidden: false, listeners: [] };
+    const state = { current: [], captures: [], marks: true, hidden: false, preview: false, listeners: [], previewListeners: [] };
+    let pageWindow = window;
+    let pageDocument = document;
+    let resizeTimer = 0;
 
     const style = document.createElement("style");
     const nonceSource = document.querySelector("style[nonce],script[nonce]");
@@ -26,13 +30,16 @@
         .toggle{display:flex;align-items:center;gap:5px;padding:0 5px;color:rgb(83,100,124);font-size:11px;white-space:nowrap}.toggle input{accent-color:rgb(53,127,189)}
         .status{display:flex;justify-content:space-between;gap:10px;padding:8px 14px;color:rgb(86,103,127);background:rgb(255,255,255);font-size:11px}.status span{direction:ltr;text-align:left;unicode-bidi:isolate}.status b{color:rgb(36,94,153);white-space:nowrap}
         .notice{margin:0 12px 8px;padding:8px 10px;border-radius:8px;background:rgb(234,244,255);color:rgb(56,87,121);font-size:11px}
+        .viewport-controls{display:grid;grid-template-columns:minmax(150px,1fr) auto auto auto;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid rgb(226,232,240);background:white}.viewport-controls strong{font-size:11px;color:rgb(57,76,102)}.viewport-controls label{display:flex;align-items:center;gap:4px;color:rgb(93,109,131);font-size:10px;white-space:nowrap}.viewport-controls input,.viewport-controls select{height:32px;padding:4px 7px;border:1px solid rgb(208,219,234);border-radius:7px;background:white;color:rgb(20,35,60);font:12px Arial,Tahoma,sans-serif}.viewport-controls input{width:74px;direction:ltr}.viewport-controls select{min-width:120px}.viewport-controls .preview-toggle{min-width:106px}
+        .launcher{position:fixed;z-index:4;right:14px;bottom:14px;width:48px;height:48px;padding:0;border:0;border-radius:50%;background:rgb(16,26,48);color:white;box-shadow:0 8px 26px rgba(7,21,43,.3);font:700 13px Arial,Tahoma,sans-serif;cursor:pointer;pointer-events:auto}.launcher:hover{background:rgb(36,94,153)}
+        .viewport-shell{position:fixed;z-index:0;inset:0;overflow:auto;padding:58px 24px 28px;background:rgba(12,22,40,.76);pointer-events:auto}.preview-toolbar{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:100%;padding:8px 12px;border:1px solid rgba(255,255,255,.28);border-radius:9px;background:rgb(16,26,48);color:white;font:12px Arial,Tahoma,sans-serif}.preview-frame{display:block;margin:14px auto 20px;border:0;outline:1px solid rgba(255,255,255,.7);background:white;box-shadow:0 12px 38px rgba(0,0,0,.34)}
         .results{min-height:100px;overflow:auto;padding:0 12px 12px;overscroll-behavior:contain}
         .item{display:grid;grid-template-columns:145px minmax(130px,1.1fr) minmax(250px,1.6fr);gap:10px;align-items:start;padding:10px;border-top:1px solid rgb(230,235,242)}
         .role{font-weight:700;color:rgb(23,41,67)}.sample{min-width:0;color:rgb(52,68,92);overflow-wrap:anywhere}.sample small{display:block;margin-top:4px;color:rgb(122,135,153);font-size:10px;direction:ltr;text-align:left;overflow-wrap:anywhere}
         .values{display:flex;flex-wrap:wrap;gap:5px}.chip{padding:3px 7px;border:1px solid rgb(220,229,239);border-radius:999px;background:rgb(246,249,252);color:rgb(64,83,108);font-size:10px;direction:ltr;unicode-bidi:plaintext}.chip.size{border-color:rgb(185,215,245);background:rgb(234,244,255);color:rgb(24,85,142);font-weight:700}
         .empty{padding:28px 12px;text-align:center;color:rgb(109,123,144)}.bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 13px;border-top:1px solid rgb(227,233,241);color:rgb(107,120,138);background:rgb(251,252,254);font-size:10px}
         .mark{position:fixed;z-index:1;box-sizing:border-box;border:1px solid rgb(242,109,50);background:rgba(242,109,50,.025);pointer-events:none}.mark.title{border-color:rgb(241,145,39);background:rgba(241,145,39,.025)}.mark.cta{border-color:rgb(48,162,123);background:rgba(48,162,123,.025)}.mark-label{position:absolute;top:-1px;right:-1px;transform:translateY(-100%);max-width:min(260px,calc(100vw - 16px));padding:2px 5px;border-radius:4px 4px 0 0;background:rgb(21,36,58);color:white;font:10px/1.35 Arial,Tahoma,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl}
-        @media(max-width:700px){.panel{right:7px;bottom:7px;width:calc(100vw - 14px);max-height:88vh;border-radius:12px}.top{gap:7px;padding:10px}.brand strong{font-size:13px}.actions{gap:5px;padding:8px}.item{grid-template-columns:1fr;gap:5px;padding:9px}.values{gap:4px}.bottom{align-items:flex-start;flex-direction:column}.search{flex-basis:100%}}
+        @media(max-width:700px){.panel{right:7px;bottom:7px;width:calc(100vw - 14px);max-height:88vh;border-radius:12px}.top{gap:7px;padding:10px}.brand strong{font-size:13px}.actions{gap:5px;padding:8px}.item{grid-template-columns:1fr;gap:5px;padding:9px}.values{gap:4px}.bottom{align-items:flex-start;flex-direction:column}.search{flex-basis:100%}.viewport-controls{grid-template-columns:1fr 1fr;gap:6px;padding:8px}.viewport-controls strong{grid-column:1/-1}.viewport-controls select{grid-column:1/-1;width:100%}.viewport-controls .preview-toggle{grid-column:1/-1;width:100%}.viewport-controls label{justify-content:space-between}.viewport-controls input{width:70px}.viewport-shell{padding:56px 10px 20px}.preview-toolbar{font-size:11px}.launcher{right:8px;bottom:8px;width:44px;height:44px}}
     `;
     shadow.appendChild(style);
 
@@ -51,12 +58,40 @@
             <button class="json" type="button">دانلود JSON</button>
             <button class="clear" type="button">پاک‌کردن ثبت‌ها</button>
         </div>
+        <div class="viewport-controls" aria-label="تنظیم اندازه پیش‌نمایش">
+            <strong>اندازه صفحه برای بررسی واکنش‌گرا</strong>
+            <select class="viewport-preset" aria-label="اندازه آماده صفحه">
+                <option value="custom">اندازه دلخواه</option>
+                <option value="390x844">موبایل · 390 × 844</option>
+                <option value="768x1024">تبلت · 768 × 1024</option>
+                <option value="1366x900">دسکتاپ · 1366 × 900</option>
+                <option value="1920x1080">دسکتاپ بزرگ · 1920 × 1080</option>
+            </select>
+            <label>عرض <input class="viewport-width" type="number" min="320" max="3840" step="1" inputmode="numeric" /> px</label>
+            <label>ارتفاع <input class="viewport-height" type="number" min="320" max="3000" step="1" inputmode="numeric" /> px</label>
+            <button class="preview-toggle primary" type="button">پیش‌نمایش این اندازه</button>
+        </div>
         <div class="status"><span></span><b></b></div>
-        <p class="notice">برای بررسی واکنش‌گرا، عرض پنجره را عوض کن و در هر عرض «ثبت این اندازه» را بزن. داده‌ها فقط تا وقتی این صفحه باز است در همین نشست می‌مانند.</p>
+        <p class="notice">اندازه دلخواه را وارد کن یا یک اندازه آماده انتخاب کن؛ پیش‌نمایش با همان viewport واقعی CSS باز می‌شود. داده‌ها فقط تا وقتی صفحه باز است در همین نشست می‌مانند.</p>
         <div class="results" aria-live="polite"></div>
         <footer class="bottom"><span>بدون تغییر در CSS سایت · بدون ارسال داده به شبکه</span><span class="capture-count">ثبت‌شده‌ها: ۰</span></footer>
     `;
     shadow.appendChild(panel);
+
+    const launcher = document.createElement("button");
+    launcher.className = "launcher";
+    launcher.type = "button";
+    launcher.textContent = "Aa";
+    launcher.title = "بازکردن پنل اندازه فونت";
+    launcher.setAttribute("aria-label", "بازکردن پنل اندازه فونت");
+    launcher.hidden = true;
+    shadow.appendChild(launcher);
+
+    const viewportShell = document.createElement("div");
+    viewportShell.className = "viewport-shell";
+    viewportShell.hidden = true;
+    viewportShell.innerHTML = `<div class="preview-toolbar"><span>پیش‌نمایش واکنش‌گرا · صفحه اصلی در پس‌زمینه موقتاً پوشانده شده</span><button class="preview-exit" type="button">خروج از پیش‌نمایش</button></div><iframe class="preview-frame" title="پیش‌نمایش اندازه صفحه"></iframe>`;
+    shadow.appendChild(viewportShell);
     document.documentElement.appendChild(host);
 
     const q = (selector) => shadow.querySelector(selector);
@@ -66,7 +101,104 @@
     markerLayer.className = "marker-layer";
     shadow.appendChild(markerLayer);
     q(".url").textContent = `${location.hostname}${location.pathname}`;
-    let resizeTimer = 0;
+    const frame = viewportShell.querySelector(".preview-frame");
+    const widthInput = q(".viewport-width");
+    const heightInput = q(".viewport-height");
+    widthInput.value = String(innerWidth);
+    heightInput.value = String(innerHeight);
+    q(".url").textContent = `${location.hostname}${location.pathname}`;
+
+    function getPageWindow() { return pageWindow; }
+    function getPageDocument() { return pageDocument; }
+
+    function clearPreviewListeners() {
+        for (const [target, event, listener, options] of state.previewListeners) target.removeEventListener(event, listener, options);
+        state.previewListeners = [];
+    }
+
+    function setPreviewContext() {
+        clearPreviewListeners();
+        try {
+            pageWindow = frame.contentWindow;
+            pageDocument = frame.contentDocument;
+            if (!pageWindow || !pageDocument || pageDocument.location.origin !== location.origin) throw new Error("Preview must remain on this site.");
+        } catch {
+            stopPreview();
+            return;
+        }
+        const previewScroll = { passive: true, capture: true };
+        const previewResize = { passive: true };
+        pageWindow.addEventListener("scroll", updateMarkers, previewScroll);
+        pageWindow.addEventListener("resize", onResize, previewResize);
+        state.previewListeners.push([pageWindow, "scroll", updateMarkers, previewScroll], [pageWindow, "resize", onResize, previewResize]);
+        pageDocument.addEventListener("click", (event) => {
+            const link = event.target.closest?.("a[href]");
+            if (!link) return;
+            try {
+                const nextUrl = new URL(link.href, pageWindow.location.href);
+                if (nextUrl.origin === location.origin) {
+                    nextUrl.searchParams.set("__marpichFontPreview", "1");
+                    link.href = nextUrl.href;
+                }
+            } catch { /* Ignore non-URL links. */ }
+        }, true);
+        scan();
+    }
+
+    function applyPreviewSize() {
+        const width = Number(widthInput.value);
+        const height = Number(heightInput.value);
+        if (!Number.isInteger(width) || width < 320 || width > 3840 || !Number.isInteger(height) || height < 320 || height > 3000) {
+            widthInput.setCustomValidity("عرض 320 تا 3840 و ارتفاع 320 تا 3000 پیکسل وارد کن.");
+            widthInput.reportValidity();
+            return;
+        }
+        widthInput.setCustomValidity("");
+        heightInput.setCustomValidity("");
+        frame.style.width = `${width}px`;
+        frame.style.height = `${height}px`;
+        if (!state.preview) {
+            state.preview = true;
+            viewportShell.hidden = false;
+            const previewUrl = new URL(location.href);
+            previewUrl.searchParams.set("__marpichFontPreview", "1");
+            frame.onload = setPreviewContext;
+            frame.src = previewUrl.href;
+            q(".preview-toggle").textContent = "اعمال اندازه جدید";
+            return;
+        }
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(scan, 160);
+    }
+
+    function stopPreview() {
+        if (!state.preview) return;
+        state.preview = false;
+        clearPreviewListeners();
+        pageWindow = window;
+        pageDocument = document;
+        frame.onload = null;
+        frame.src = "about:blank";
+        viewportShell.hidden = true;
+        q(".preview-toggle").textContent = "پیش‌نمایش این اندازه";
+        scan();
+    }
+
+    function hidePanel() {
+        state.hidden = true;
+        panel.style.display = "none";
+        launcher.hidden = false;
+        markerLayer.style.display = state.marks ? "block" : "none";
+    }
+
+    function showPanel() {
+        state.hidden = false;
+        panel.style.display = "flex";
+        launcher.hidden = true;
+        markerLayer.style.display = state.marks ? "block" : "none";
+    }
+
+    function toggle() { state.hidden ? showPanel() : hidePanel(); }
 
     function textOf(el) {
         if (el.matches("input,textarea,select")) {
@@ -77,7 +209,7 @@
     }
 
     function isVisible(el) {
-        const css = getComputedStyle(el);
+        const css = getPageWindow().getComputedStyle(el);
         const rect = el.getBoundingClientRect();
         return css.display !== "none" && css.visibility !== "hidden" && Number(css.opacity) > 0 && rect.width > 0 && rect.height > 0 && el.getClientRects().length > 0;
     }
@@ -103,7 +235,7 @@
     function domPath(el) {
         const parts = [];
         let node = el;
-        while (node && node.nodeType === 1 && parts.length < 6 && node !== document.documentElement) {
+        while (node && node.nodeType === 1 && parts.length < 6 && node !== getPageDocument().documentElement) {
             let part = node.tagName.toLowerCase();
             if (node.id) {
                 part += String.fromCharCode(35) + node.id;
@@ -122,7 +254,8 @@
 
     function scan() {
         const selector = "h1,h2,h3,h4,h5,h6,p,a,button,label,input,textarea,select,li,[role=button],[class*=title i],[class*=heading i],[class*=subtitle i],[class*=description i],[class*=summary i]";
-        const elements = [...document.querySelectorAll(selector)].filter((el) => !host.contains(el) && isVisible(el));
+        const doc = getPageDocument();
+        const elements = [...doc.querySelectorAll(selector)].filter((el) => (doc !== document || !host.contains(el)) && isVisible(el));
         const unique = elements.filter((el) => {
             const text = textOf(el);
             if (!text || text.length < 2) return false;
@@ -132,7 +265,7 @@
             return true;
         });
         state.current = unique.map((el, index) => {
-            const css = getComputedStyle(el);
+            const css = getPageWindow().getComputedStyle(el);
             const rect = el.getBoundingClientRect();
             const families = css.fontFamily.split(",").map((name) => name.trim().replace(/^['"]|['"]$/g, ""));
             return {
@@ -195,10 +328,12 @@
             row.append(role, sample, values);
             results.appendChild(row);
         }
-        const language = document.documentElement.lang || "نامشخص";
-        q(".url").textContent = `${location.hostname}${location.pathname}`;
-        q(".status span").textContent = `${location.hostname}${location.pathname}`;
-        q(".status b").textContent = `${innerWidth} × ${innerHeight}px · ${language} · ${visible.length} متن`;
+        const view = getPageWindow();
+        const doc = getPageDocument();
+        const language = doc.documentElement.lang || "نامشخص";
+        q(".url").textContent = `${view.location.hostname}${view.location.pathname}`;
+        q(".status span").textContent = `${view.location.hostname}${view.location.pathname}`;
+        q(".status b").textContent = `${view.innerWidth} × ${view.innerHeight}px · ${language} · ${visible.length} متن`;
         q(".capture-count").textContent = `ثبت‌شده‌ها: ${state.captures.length} عرض`;
     }
 
@@ -207,13 +342,17 @@
         if (!state.marks) return;
         for (const item of state.current) {
             const rect = item.element.getBoundingClientRect();
-            if (rect.width <= 0 || rect.height <= 0 || rect.bottom < 0 || rect.top > innerHeight || rect.right < 0 || rect.left > innerWidth) continue;
+            const frameRect = state.preview ? frame.getBoundingClientRect() : { left: 0, top: 0 };
+            const left = rect.left + frameRect.left;
+            const top = rect.top + frameRect.top;
+            const view = getPageWindow();
+            if (rect.width <= 0 || rect.height <= 0 || rect.bottom < 0 || rect.top > view.innerHeight || rect.right < 0 || rect.left > view.innerWidth) continue;
             const mark = document.createElement("div");
             mark.className = `mark${item.role.includes("عنوان") ? " title" : item.role.includes("CTA") ? " cta" : ""}`;
             // Keep fractional CSS pixels: rounding shifts thin borders away from
             // the element's real edge on high-DPI and zoomed viewports.
-            mark.style.left = `${rect.left.toFixed(2)}px`;
-            mark.style.top = `${rect.top.toFixed(2)}px`;
+            mark.style.left = `${left.toFixed(2)}px`;
+            mark.style.top = `${top.toFixed(2)}px`;
             mark.style.width = `${rect.width.toFixed(2)}px`;
             mark.style.height = `${rect.height.toFixed(2)}px`;
             const label = document.createElement("span");
@@ -227,11 +366,11 @@
     function capture() {
         scan();
         state.captures.push({
-            url: location.href,
-            pageTitle: document.title,
-            language: document.documentElement.lang || "نامشخص",
+            url: getPageWindow().location.href,
+            pageTitle: getPageDocument().title,
+            language: getPageDocument().documentElement.lang || "نامشخص",
             capturedAt: new Date().toISOString(),
-            viewport: { width: innerWidth, height: innerHeight, devicePixelRatio },
+            viewport: { width: getPageWindow().innerWidth, height: getPageWindow().innerHeight, devicePixelRatio: getPageWindow().devicePixelRatio },
             items: state.current.map(({ element, ...item }) => ({ ...item, rect: { ...item.rect } })),
         });
         render();
@@ -256,7 +395,7 @@
     }
 
     function exportJson() {
-        download("font-audit.json", JSON.stringify({ page: { url: location.href, title: document.title }, captures: state.captures }, null, 2), "application/json;charset=utf-8");
+        download("font-audit.json", JSON.stringify({ page: { url: getPageWindow().location.href, title: getPageDocument().title }, captures: state.captures }, null, 2), "application/json;charset=utf-8");
     }
 
     function exportCsv() {
@@ -274,15 +413,10 @@
 
     function cleanup() {
         clearTimeout(resizeTimer);
+        clearPreviewListeners();
         for (const [target, event, listener, options] of state.listeners) target.removeEventListener(event, listener, options);
         host.remove();
         delete window[key];
-    }
-
-    function toggle() {
-        state.hidden = !state.hidden;
-        panel.style.display = state.hidden ? "none" : "flex";
-        markerLayer.style.display = state.hidden || !state.marks ? "none" : "block";
     }
 
     q(".rescan").addEventListener("click", scan);
@@ -290,12 +424,25 @@
     q(".csv").addEventListener("click", exportCsv);
     q(".json").addEventListener("click", exportJson);
     q(".clear").addEventListener("click", () => { state.captures = []; render(); });
-    q(".close").addEventListener("click", cleanup);
+    q(".close").addEventListener("click", hidePanel);
+    launcher.addEventListener("click", showPanel);
+    q(".viewport-preset").addEventListener("change", (event) => {
+        if (event.target.value === "custom") return;
+        const [width, height] = event.target.value.split("x");
+        widthInput.value = width;
+        heightInput.value = height;
+        if (state.preview) applyPreviewSize();
+    });
+    q(".preview-toggle").addEventListener("click", () => state.preview ? applyPreviewSize() : applyPreviewSize());
+    q(".preview-exit").addEventListener("click", stopPreview);
+    widthInput.addEventListener("input", () => { q(".viewport-preset").value = "custom"; });
+    heightInput.addEventListener("input", () => { q(".viewport-preset").value = "custom"; });
     q(".show-marks").addEventListener("change", (event) => { state.marks = event.target.checked; updateMarkers(); });
     searchInput.addEventListener("input", render);
     const onScroll = () => updateMarkers();
-    const onResize = () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(scan, 140); };
-    const onKey = (event) => { if (event.key === "Escape") cleanup(); };
+    viewportShell.addEventListener("scroll", onScroll, { passive: true });
+    function onResize() { clearTimeout(resizeTimer); resizeTimer = setTimeout(scan, 140); }
+    const onKey = (event) => { if (event.key === "Escape") { state.preview ? stopPreview() : hidePanel(); } };
     const scrollOptions = { passive: true, capture: true };
     const resizeOptions = { passive: true };
     const keyOptions = true;
@@ -303,7 +450,7 @@
     window.addEventListener("resize", onResize, resizeOptions);
     window.addEventListener("keydown", onKey, keyOptions);
     state.listeners.push([window, "scroll", onScroll, scrollOptions], [window, "resize", onResize, resizeOptions], [window, "keydown", onKey, keyOptions]);
-    window[key] = { toggle, close: cleanup };
+    window[key] = { toggle, close: hidePanel, cleanup };
     scan();
 })();
 
